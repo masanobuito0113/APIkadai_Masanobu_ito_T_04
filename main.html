@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta
+    name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.4/axios.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <main>
+    <h1>ChatGPTを使ってやさしい言い回しにしよう</h1>
+    <h2>家族登録</h2>
+        <p>妻の呼び名を登録して下さい</p>
+        <input type="text" name="wife" />
+        <p>子供の名前を登録して下さい</p>
+        <input type="text" name="child_1" />
+        <input type="text" name="child_2" />
+        <input type="text" name="child_3" />
+    <h2>言い回し変換</h2>
+
+    <input type="text" name="talk" />
+    <button type="button" class="send">送信</button>
+    <div class="output">ここに言い回しが表示</div>
+    </main>
+    <script>
+    // TODO:
+    const api_key = "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";
+
+    const sendButton = document.querySelector(".send");
+    sendButton.addEventListener("click", async () => {
+        const text = document.querySelector("input[name=talk]");
+        const responseText = await requestChatAPI(text.value);
+        const output = document.querySelector(".output");
+        output.textContent = responseText;
+    });
+
+    async function requestChatAPI(text) {
+        const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${api_key}`,
+        };
+
+        const messages = [
+          {
+            role: "system",
+            content: `
+      あなたはチャットアプリで夫婦間での日本語の表現を丁寧に変換することを前提にしたツールです。
+      こちらが雑に送信しても、相手の感情を負の方向へ向かわないやわらかな言い回しに変換してください。
+      ただし、あまり丁寧すぎると慇懃無礼になるので、適度な距離感で。
+      夫婦ではあるが、雑すぎない距離感の言い回しに変えてください。
+      丁寧語はなるべく使わずに、挨拶も不要です。あくまで関係性は家族です。会社などの組織っぽくならないように気をつけてください
+      inputformのwife、child_1、child_2、child_3に入っているのは家族なので、呼び捨てにすること。
+      例文
+     ＊帰りにパン買ってきて！→疲れてるところ悪いけど、帰りにパンを買ってきてくれると助かる！
+      ＊何時に帰る？→お疲れ様。今日は何時に帰ってくる？
+      ＊帰るの遅くなる。何時かわからない→ごめん！今日は帰りが遅くなりそうだ。何時になるかまだわからないんだよ……
+      
+    `,
+          },
+            {role: "user", content: text},
+        ];
+
+        const payload = {
+        model: "gpt-3.5-turbo",
+        max_tokens: 128,
+        messages: messages,
+        };
+        const response = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        payload,
+        {
+            headers: headers,
+        }
+        );
+        return response.data.choices[0].message.content;
+    }
+    </script>
+</body>
+</html>
